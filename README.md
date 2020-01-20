@@ -1,0 +1,1 @@
+# Shadowverse Custom Card Generator
