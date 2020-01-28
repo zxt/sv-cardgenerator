@@ -83,9 +83,19 @@ def paste_card_art(canvas, img_src, card_type):
         h = 327
         x = 48
         y = 86
-        mask = Image.open('templates/cards/followers/follower_mask.png').convert('L').resize((w,h))
+        mask = Image.open("templates/cards/followers/follower_mask.png").convert('L').resize((w,h))
+    elif card_type == 2 or card_type == 3:
+        w = 257
+        h = 324
+        x = 48
+        y = 82
+        mask = Image.open("templates/cards/amulets/amulet_mask.png").convert('L').resize((w,h))
     else:
-        mask = Image.open('templates/cards/spells/spell_mask.png').convert('L').resize((w,h))
+        w = 254
+        h = 311
+        x = 48
+        y = 69
+        mask = Image.open("templates/cards/spells/spell_mask.png").convert('L').resize((w,h))
 
     img = Image.open(img_src).resize((w,h))
 
@@ -108,9 +118,9 @@ def paste_card_art_canvas(card, art_canvas, card_details):
     if card_details['card_type'] == 1:
         print_card_stats(art_frame, card_details['card_atk'], card_details['card_hp'], atk_xy, hp_xy, font_size)
 
-    paste_craft_gem(art_frame, card_details['craft'], card_details['card_type'])
-
     paste_card_art(art_frame, card_details['base_img'], card_details['card_type'])
+
+    paste_craft_gem(art_frame, card_details['craft'], card_details['card_type'])
 
     art_canvas.paste(art_frame, (0,0), art_frame)
 
