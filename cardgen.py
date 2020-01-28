@@ -118,7 +118,7 @@ def paste_card_art_canvas(card, art_canvas, card_details):
     if card_details['card_type'] == 1:
         print_card_stats(art_frame, card_details['card_atk'], card_details['card_hp'], atk_xy, hp_xy, font_size)
 
-    paste_card_art(art_frame, card_details['base_img'], card_details['card_type'])
+    paste_card_art(art_canvas, card_details['base_img'], card_details['card_type'])
 
     paste_craft_gem(art_frame, card_details['craft'], card_details['card_type'])
 
