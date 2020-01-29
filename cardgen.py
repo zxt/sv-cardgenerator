@@ -1,3 +1,4 @@
+import json
 from PIL import Image, ImageDraw, ImageFont
 
 def scale_font_size(font, text, textbox_size):
@@ -31,7 +32,8 @@ def print_card_name(art_frame, card_name, card_type):
 
     name.text((x_pos + x_offset, y_pos), card_name, fill='white', font=font)
 
-def print_card_cost(art_frame, card_cost, card_type):
+def print_card_cost(art_frame, cost, card_type):
+    card_cost = str(cost)
     font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 1)
     font_size = scale_font_size(font, card_cost, (60,60))
     font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', font_size)
@@ -52,13 +54,15 @@ def print_card_cost(art_frame, card_cost, card_type):
     cost.text((x_pos + x_offset, y_pos), card_cost, fill='white', font=font)
 
 def print_card_stats(art_frame, card_atk, card_hp, atk_xy, hp_xy, font_size):
+    atk = str(card_atk)
+    hp = str(card_hp)
     font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', font_size)
 
-    atk = ImageDraw.Draw(art_frame)
-    hp = ImageDraw.Draw(art_frame)
+    atk_img = ImageDraw.Draw(art_frame)
+    hp_img = ImageDraw.Draw(art_frame)
 
-    atk.text(atk_xy, card_atk, fill='white', font=font)
-    hp.text(hp_xy, card_hp, fill='white', font=font)
+    atk_img.text(atk_xy, atk, fill='white', font=font)
+    hp_img.text(hp_xy, hp, fill='white', font=font)
 
 def paste_craft_gem(canvas, craft, card_type):
     craft_list = ['neutral', 'forest', 'sword', 'rune', 'dragon', 'shadow', 'blood', 'haven', 'portal']
@@ -106,21 +110,21 @@ def paste_card_art_canvas(card, art_canvas, card_details):
     type_list = ['', 'follower', 'amulet', 'amulet', 'spell']
 
     card_rarity = rarity_list[card_details['rarity']]
-    card_type = type_list[card_details['card_type']]
+    card_type = type_list[card_details['char_type']]
     art_frame = Image.open('templates/cards/'+card_type+'s/'+card_type+'_'+card_rarity+'.png')
 
-    print_card_name(art_frame, card_details['card_name'], card_details['card_type'])
-    print_card_cost(art_frame, card_details['card_cost'], card_details['card_type'])
+    print_card_name(art_frame, card_details['card_name'], card_details['char_type'])
+    print_card_cost(art_frame, card_details['cost'], card_details['char_type'])
 
     atk_xy = (30, 380)
     hp_xy = (295, 380)
     font_size = 60
-    if card_details['card_type'] == 1:
-        print_card_stats(art_frame, card_details['card_atk'], card_details['card_hp'], atk_xy, hp_xy, font_size)
+    if card_details['char_type'] == 1:
+        print_card_stats(art_frame, card_details['atk'], card_details['life'], atk_xy, hp_xy, font_size)
 
-    paste_card_art(art_canvas, card_details['base_img'], card_details['card_type'])
+    paste_card_art(art_canvas, card_details['base_img'], card_details['char_type'])
 
-    paste_craft_gem(art_frame, card_details['craft'], card_details['card_type'])
+    paste_craft_gem(art_frame, card_details['clan'], card_details['char_type'])
 
     art_canvas.paste(art_frame, (0,0), art_frame)
 
@@ -134,8 +138,8 @@ def paste_card_text_canvas(card, text_canvas, card_details):
     evo_atk_xy = (500, 245)
     evo_hp_xy = (590, 245)
     font_size = 32
-    print_card_stats(text_frame, card_details['card_atk'], card_details['card_hp'], base_atk_xy, base_hp_xy, font_size)
-    print_card_stats(text_frame, card_details['card_atk'], card_details['card_hp'], evo_atk_xy, evo_hp_xy, font_size)
+    print_card_stats(text_frame, card_details['atk'], card_details['life'], base_atk_xy, base_hp_xy, font_size)
+    print_card_stats(text_frame, card_details['evo_atk'], card_details['evo_life'], evo_atk_xy, evo_hp_xy, font_size)
 
     text_font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 20)
     ct_canvas = Image.new('RGBA', (650, 600), color=(0,0,0,0))
@@ -160,7 +164,7 @@ def paste_header_canvas(card, header_canvas, card_details):
     craft_list = ['Neutral', 'Forestcraft', 'Swordcraft', 'Runecraft',
                   'Dragoncraft', 'Shadowcraft', 'Bloodcraft', 'Havencraft', 'Portalcraft']
 
-    craft = craft_list[card_details['craft']]
+    craft = craft_list[card_details['clan']]
 
     font_1 = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 36)
     font_2 = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 22)
@@ -175,10 +179,10 @@ def paste_header_canvas(card, header_canvas, card_details):
     trait_label = ImageDraw.Draw(info_text_canvas)
 
     craft_label.text((0,0), 'Class:', fill='white', font=font_2)
-    paste_craft_icon(info_text_canvas, card_details['craft'], (60, 0))
+    paste_craft_icon(info_text_canvas, card_details['clan'], (60, 0))
     craft_label.text((95,0), craft, fill='white', font=font_2)
 
-    trait_label.text((0, 30), 'Trait: '+card_details['trait'], fill='white', font=font_2)
+    trait_label.text((0, 30), 'Trait: '+card_details['tribe_name'], fill='white', font=font_2)
 
     header_canvas.paste(info_text_canvas, (template_width - text_width, header_height//4), info_text_canvas)
 
@@ -196,23 +200,14 @@ header_height = 100
 text_canvas_width = 700
 text_canvas_height = 700
 
-card_details = {}
-card_details['card_name'] = "Legendary Goblin"
-card_details['craft'] = 5
-card_details['trait'] = 'goblin'
-card_details['card_type'] = 1
-card_details['rarity'] = 4
-card_details['card_cost'] = '1'
-card_details['card_atk'] = '3'
-card_details['card_hp'] = '3'
-card_details['skill_disc'] = 'Storm.\nFanfare: Give another goblin +1 attack until the end of the turn.'
-card_details['evo_skill_disc'] = 'Storm.'
-card_details['base_img'] = 'goblin.jpeg'
+with open("examples/cards.json", "r") as data:
+    cards = json.load(data)
+    card_details = cards[0]
 
-if card_details['card_type'] == 1:
+if card_details['char_type'] == 1:
     art_canvas_width = 347
     art_canvas_height = 461
-elif card_details['card_type'] == 2 or card_details['card_type'] == 3:
+elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
     art_canvas_width = 322
     art_canvas_height = 423
 else:
@@ -228,4 +223,4 @@ paste_header_canvas(card, header_canvas, card_details)
 paste_card_art_canvas(card, art_canvas, card_details)
 paste_card_text_canvas(card, text_canvas, card_details)
 
-card.save('card.png')
+card.save("examples/card.png")
