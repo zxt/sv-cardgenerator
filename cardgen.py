@@ -136,7 +136,7 @@ def paste_card_text_canvas(card, text_canvas, card_details):
     if card_details['char_type'] == 1:
         text_frame = Image.open('templates/layout/follower_textbox.png')
     elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
-        pass
+        text_frame = Image.open('templates/layout/amulet_textbox.png')
     else:
         text_frame = Image.open('templates/layout/spell_textbox.png')
 
@@ -156,7 +156,7 @@ def paste_card_text_canvas(card, text_canvas, card_details):
     if card_details['char_type'] == 1:
         ct_xy = (0, 0)
     elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
-        ct_xy = (0, 0)
+        ct_xy = (0, 20)
     else:
         ct_xy = (0, 20)
 
