@@ -133,21 +133,36 @@ def paste_card_art_canvas(card, art_canvas, card_details):
     card.paste(art_canvas, (0, template_height//2 - art_canvas.height//2), art_canvas)
 
 def paste_card_text_canvas(card, text_canvas, card_details):
-    text_frame = Image.open('templates/layout/textbox.png')
-
-    base_atk_xy = (500, 50)
-    base_hp_xy = (590, 50)
-    evo_atk_xy = (500, 245)
-    evo_hp_xy = (590, 245)
-    font_size = 32
     if card_details['char_type'] == 1:
+        text_frame = Image.open('templates/layout/follower_textbox.png')
+    elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
+        pass
+    else:
+        text_frame = Image.open('templates/layout/spell_textbox.png')
+
+
+    if card_details['char_type'] == 1:
+        font_size = 32
+        base_atk_xy = (500, 50)
+        base_hp_xy = (590, 50)
+        evo_atk_xy = (500, 245)
+        evo_hp_xy = (590, 245)
         print_card_stats(text_frame, card_details['atk'], card_details['life'], base_atk_xy, base_hp_xy, font_size)
         print_card_stats(text_frame, card_details['evo_atk'], card_details['evo_life'], evo_atk_xy, evo_hp_xy, font_size)
 
     text_font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 20)
     ct_canvas = Image.new('RGBA', (650, 600), color=(0,0,0,0))
+
+    if card_details['char_type'] == 1:
+        ct_xy = (0, 0)
+    elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
+        ct_xy = (0, 0)
+    else:
+        ct_xy = (0, 20)
+
     base_card_text = ImageDraw.Draw(ct_canvas)
-    base_card_text.multiline_text((0, 0), card_details['skill_disc'], fill='white', font=text_font, spacing=5)
+    base_card_text.multiline_text(ct_xy, card_details['skill_disc'], fill='white', font=text_font, spacing=5)
+
     if card_details['char_type'] == 1:
         evo_card_text = ImageDraw.Draw(ct_canvas)
         evo_card_text.multiline_text((0,200), card_details['evo_skill_disc'], fill='white', font=text_font, spacing=5)
