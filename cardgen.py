@@ -122,6 +122,8 @@ def paste_card_art_canvas(card, art_canvas, card_details):
     if card_details['char_type'] == 1:
         print_card_stats(art_frame, card_details['atk'], card_details['life'], atk_xy, hp_xy, font_size)
 
+    if "base_img" not in card_details:
+        card_details['base_img'] = "templates/cards/placeholder.png"
     paste_card_art(art_canvas, card_details['base_img'], card_details['char_type'])
 
     paste_craft_gem(art_frame, card_details['clan'], card_details['char_type'])
@@ -138,15 +140,17 @@ def paste_card_text_canvas(card, text_canvas, card_details):
     evo_atk_xy = (500, 245)
     evo_hp_xy = (590, 245)
     font_size = 32
-    print_card_stats(text_frame, card_details['atk'], card_details['life'], base_atk_xy, base_hp_xy, font_size)
-    print_card_stats(text_frame, card_details['evo_atk'], card_details['evo_life'], evo_atk_xy, evo_hp_xy, font_size)
+    if card_details['char_type'] == 1:
+        print_card_stats(text_frame, card_details['atk'], card_details['life'], base_atk_xy, base_hp_xy, font_size)
+        print_card_stats(text_frame, card_details['evo_atk'], card_details['evo_life'], evo_atk_xy, evo_hp_xy, font_size)
 
     text_font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 20)
     ct_canvas = Image.new('RGBA', (650, 600), color=(0,0,0,0))
     base_card_text = ImageDraw.Draw(ct_canvas)
     base_card_text.multiline_text((0, 0), card_details['skill_disc'], fill='white', font=text_font, spacing=5)
-    evo_card_text = ImageDraw.Draw(ct_canvas)
-    evo_card_text.multiline_text((0,200), card_details['evo_skill_disc'], fill='white', font=text_font, spacing=5)
+    if card_details['char_type'] == 1:
+        evo_card_text = ImageDraw.Draw(ct_canvas)
+        evo_card_text.multiline_text((0,200), card_details['evo_skill_disc'], fill='white', font=text_font, spacing=5)
 
     text_canvas.paste(text_frame, (0,0), text_frame)
     text_canvas.paste(ct_canvas, (50,85), ct_canvas)
@@ -179,7 +183,8 @@ def paste_header_canvas(card, header_canvas, card_details):
     trait_label = ImageDraw.Draw(info_text_canvas)
 
     craft_label.text((0,0), 'Class:', fill='white', font=font_2)
-    paste_craft_icon(info_text_canvas, card_details['clan'], (60, 0))
+    if card_details['clan'] is not 0:
+        paste_craft_icon(info_text_canvas, card_details['clan'], (60, 0))
     craft_label.text((95,0), craft, fill='white', font=font_2)
 
     trait_label.text((0, 30), 'Trait: '+card_details['tribe_name'], fill='white', font=font_2)
@@ -214,13 +219,14 @@ else:
     art_canvas_width = 322
     art_canvas_height = 405
 
-card = Image.new('RGBA', (template_width, template_height), color='black')
-header_canvas = Image.new('RGBA', (header_width, header_height), color='black')
-art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color='black')
-text_canvas = Image.new('RGBA', (text_canvas_width, text_canvas_height), color='black')
+for i, card_details in enumerate(cards):
+    card = Image.new('RGBA', (template_width, template_height), color='black')
+    header_canvas = Image.new('RGBA', (header_width, header_height), color='black')
+    art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color='black')
+    text_canvas = Image.new('RGBA', (text_canvas_width, text_canvas_height), color='black')
 
-paste_header_canvas(card, header_canvas, card_details)
-paste_card_art_canvas(card, art_canvas, card_details)
-paste_card_text_canvas(card, text_canvas, card_details)
+    paste_header_canvas(card, header_canvas, card_details)
+    paste_card_art_canvas(card, art_canvas, card_details)
+    paste_card_text_canvas(card, text_canvas, card_details)
 
-card.save("examples/card.png")
+    card.save("examples/card_" + str(i) + ".png")
