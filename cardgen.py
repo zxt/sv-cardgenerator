@@ -130,7 +130,7 @@ def paste_card_art_canvas(card, art_canvas, card_details):
 
     art_canvas.paste(art_frame, (0,0), art_frame)
 
-    card.paste(art_canvas, (0, template_height//2 - art_canvas.height//2), art_canvas)
+    card.paste(art_canvas, (100, template_height//2 - art_canvas.height//2), art_canvas)
 
 def paste_card_text_canvas(card, text_canvas, card_details):
     if card_details['char_type'] == 1:
@@ -170,7 +170,7 @@ def paste_card_text_canvas(card, text_canvas, card_details):
     text_canvas.paste(text_frame, (0,0), text_frame)
     text_canvas.paste(ct_canvas, (50,85), ct_canvas)
 
-    card.paste(text_canvas, (art_canvas_width + 20, template_height//2 - art_canvas.height//2), text_canvas)
+    card.paste(text_canvas, (art_canvas_width + 120, template_height//2 - art_canvas.height//2), text_canvas)
 
 def paste_craft_icon(canvas, craft, pos):
     craft_list = ['neutral', 'forest', 'sword', 'rune', 'dragon', 'shadow', 'blood', 'haven', 'portal']
@@ -200,16 +200,19 @@ def paste_header_canvas(card, header_canvas, card_details):
     craft_label.text((0,0), 'Class:', fill='white', font=font_2)
     if card_details['clan'] is not 0:
         paste_craft_icon(info_text_canvas, card_details['clan'], (60, 0))
-    craft_label.text((95,0), craft, fill='white', font=font_2)
+        craft_label.text((95, 0), craft, fill='white', font=font_2)
+    else:
+        craft_label.text((65, 0), craft, fill='white', font=font_2)
 
-    trait_label.text((0, 30), 'Trait: '+card_details['tribe_name'], fill='white', font=font_2)
+    trait_label.text((0, 30), 'Trait:', fill='white', font=font_2)
+    trait_label.text((90, 30), card_details['tribe_name'], fill='white', font=font_2)
 
     header_canvas.paste(info_text_canvas, (template_width - text_width, header_height//4), info_text_canvas)
 
     divider = Image.open('templates/layout/header_divider.png')
     header_canvas.paste(divider, (0, header_height - 10), divider)
 
-    card.paste(header_canvas, (0, 0), header_canvas)
+    card.paste(header_canvas, (100, 0), header_canvas)
 
 template_width = 1200
 template_height = 700
@@ -236,9 +239,9 @@ else:
 
 for i, card_details in enumerate(cards):
     card = Image.new('RGBA', (template_width, template_height), color='black')
-    header_canvas = Image.new('RGBA', (header_width, header_height), color='black')
-    art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color='black')
-    text_canvas = Image.new('RGBA', (text_canvas_width, text_canvas_height), color='black')
+    header_canvas = Image.new('RGBA', (header_width, header_height), color=(0,0,0,0))
+    art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color=(0,0,0,0))
+    text_canvas = Image.new('RGBA', (text_canvas_width, text_canvas_height), color=(0,0,0,0))
 
     paste_header_canvas(card, header_canvas, card_details)
     paste_card_art_canvas(card, art_canvas, card_details)
