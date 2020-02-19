@@ -1,6 +1,7 @@
 import json
 import argparse
 import os
+import textwrap
 from PIL import Image, ImageDraw, ImageFont
 
 def scale_font_size(font, text, textbox_size):
@@ -162,12 +163,15 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
     else:
         ct_xy = (0, 20)
 
-    base_card_text = ImageDraw.Draw(ct_canvas)
-    base_card_text.multiline_text(ct_xy, card_details['skill_disc'], fill='white', font=text_font, spacing=5)
+    card_text = textwrap.fill(card_details['skill_disc'], width=60)
+    evo_card_text = textwrap.fill(card_details['evo_skill_disc'], width=60)
+
+    base_ct_img = ImageDraw.Draw(ct_canvas)
+    base_ct_img.multiline_text(ct_xy, card_text, fill='white', font=text_font, spacing=5)
 
     if card_details['char_type'] == 1:
-        evo_card_text = ImageDraw.Draw(ct_canvas)
-        evo_card_text.multiline_text((0,200), card_details['evo_skill_disc'], fill='white', font=text_font, spacing=5)
+        evo_ct_img = ImageDraw.Draw(ct_canvas)
+        evo_ct_img.multiline_text((0,200), evo_card_text, fill='white', font=text_font, spacing=5)
 
     text_canvas.paste(text_frame, (0,0), text_frame)
     text_canvas.paste(ct_canvas, (50,85), ct_canvas)
