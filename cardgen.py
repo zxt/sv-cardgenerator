@@ -1,4 +1,6 @@
 import json
+import argparse
+import os
 from PIL import Image, ImageDraw, ImageFont
 
 def scale_font_size(font, text, textbox_size):
@@ -130,9 +132,9 @@ def paste_card_art_canvas(card, art_canvas, card_details):
 
     art_canvas.paste(art_frame, (0,0), art_frame)
 
-    card.paste(art_canvas, (100, template_height//2 - art_canvas.height//2), art_canvas)
+    card.paste(art_canvas, (100, card.height//2 - art_canvas.height//2), art_canvas)
 
-def paste_card_text_canvas(card, text_canvas, card_details):
+def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
     if card_details['char_type'] == 1:
         text_frame = Image.open('templates/layout/follower_textbox.png')
     elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
@@ -170,7 +172,8 @@ def paste_card_text_canvas(card, text_canvas, card_details):
     text_canvas.paste(text_frame, (0,0), text_frame)
     text_canvas.paste(ct_canvas, (50,85), ct_canvas)
 
-    card.paste(text_canvas, (art_canvas_width + 120, template_height//2 - art_canvas.height//2), text_canvas)
+    ac_w, ac_h = art_canvas_size
+    card.paste(text_canvas, (ac_w + 120, card.height//2 - ac_h//2), text_canvas)
 
 def paste_craft_icon(canvas, craft, pos):
     craft_list = ['neutral', 'forest', 'sword', 'rune', 'dragon', 'shadow', 'blood', 'haven', 'portal']
@@ -188,8 +191,10 @@ def paste_header_canvas(card, header_canvas, card_details):
     font_1 = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 36)
     font_2 = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 22)
 
+    h_height = header_canvas.height
+
     name = ImageDraw.Draw(header_canvas)
-    name.text((50, header_height - header_height//2), card_details['card_name'], fill='white', font=font_1)
+    name.text((50, h_height - h_height//2), card_details['card_name'], fill='white', font=font_1)
 
     text_width = 400
     text_height = 100
@@ -207,44 +212,60 @@ def paste_header_canvas(card, header_canvas, card_details):
     trait_label.text((0, 30), 'Trait:', fill='white', font=font_2)
     trait_label.text((90, 30), card_details['tribe_name'], fill='white', font=font_2)
 
-    header_canvas.paste(info_text_canvas, (template_width - text_width, header_height//4), info_text_canvas)
+    header_canvas.paste(info_text_canvas, (card.width - text_width, h_height//4), info_text_canvas)
 
     divider = Image.open('templates/layout/header_divider.png')
-    header_canvas.paste(divider, (0, header_height - 10), divider)
+    header_canvas.paste(divider, (0, h_height - 10), divider)
 
     card.paste(header_canvas, (100, 0), header_canvas)
 
-template_width = 1200
-template_height = 700
 
-header_width = 1200
-header_height = 100
+def cardgen(card_json, out_dir):
+    template_width = 1200
+    template_height = 700
 
-text_canvas_width = 700
-text_canvas_height = 700
+    header_width = 1200
+    header_height = 100
 
-with open("examples/cards.json", "r") as data:
-    cards = json.load(data)
-    card_details = cards[0]
+    text_canvas_width = 700
+    text_canvas_height = 700
 
-if card_details['char_type'] == 1:
-    art_canvas_width = 347
-    art_canvas_height = 461
-elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
-    art_canvas_width = 322
-    art_canvas_height = 423
-else:
-    art_canvas_width = 322
-    art_canvas_height = 405
+    os.makedirs(out_dir, exist_ok=True)
 
-for i, card_details in enumerate(cards):
-    card = Image.new('RGBA', (template_width, template_height), color='black')
-    header_canvas = Image.new('RGBA', (header_width, header_height), color=(0,0,0,0))
-    art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color=(0,0,0,0))
-    text_canvas = Image.new('RGBA', (text_canvas_width, text_canvas_height), color=(0,0,0,0))
+    with open(card_json, "r") as data:
+        cards = json.load(data)
 
-    paste_header_canvas(card, header_canvas, card_details)
-    paste_card_art_canvas(card, art_canvas, card_details)
-    paste_card_text_canvas(card, text_canvas, card_details)
+    for i, card_details in enumerate(cards):
+        if card_details['char_type'] == 1:
+            art_canvas_width = 347
+            art_canvas_height = 461
+        elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
+            art_canvas_width = 322
+            art_canvas_height = 423
+        else:
+            art_canvas_width = 322
+            art_canvas_height = 405
 
-    card.save("examples/card_" + str(i) + ".png")
+        card = Image.new('RGBA', (template_width, template_height), color='black')
+        header_canvas = Image.new('RGBA', (header_width, header_height), color=(0,0,0,0))
+        art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color=(0,0,0,0))
+        text_canvas = Image.new('RGBA', (text_canvas_width, text_canvas_height), color=(0,0,0,0))
+
+        paste_header_canvas(card, header_canvas, card_details)
+        paste_card_art_canvas(card, art_canvas, card_details)
+        paste_card_text_canvas(card, text_canvas, art_canvas.size, card_details)
+
+        card.save(out_dir + "/card_" + str(i) + ".png")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Process and generate custom SV cards.",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('file',
+                         help="JSON file containing card input data")
+    parser.add_argument('out_dir', nargs='?', default='cards/',
+                         help="Directory where generated cards will be placed")
+
+    args = parser.parse_args()
+
+    cardgen(args.file, args.out_dir)
