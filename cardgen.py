@@ -158,20 +158,23 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
 
     if card_details['char_type'] == 1:
         ct_xy = (0, 0)
+        line_size = 5
     elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
         ct_xy = (0, 20)
+        line_size = 15
     else:
         ct_xy = (0, 20)
+        line_size = 15
 
     card_text = textwrap.fill(card_details['skill_disc'], width=60)
     evo_card_text = textwrap.fill(card_details['evo_skill_disc'], width=60)
 
     base_ct_img = ImageDraw.Draw(ct_canvas)
-    base_ct_img.multiline_text(ct_xy, card_text, fill='white', font=text_font, spacing=5)
+    base_ct_img.multiline_text(ct_xy, card_text, fill='white', font=text_font, spacing=line_size)
 
     if card_details['char_type'] == 1:
         evo_ct_img = ImageDraw.Draw(ct_canvas)
-        evo_ct_img.multiline_text((0,200), evo_card_text, fill='white', font=text_font, spacing=5)
+        evo_ct_img.multiline_text((0,200), evo_card_text, fill='white', font=text_font, spacing=line_size)
 
     text_canvas.paste(text_frame, (0,0), text_frame)
     text_canvas.paste(ct_canvas, (50,85), ct_canvas)
