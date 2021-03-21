@@ -167,12 +167,11 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
         line_size = 15
 
     card_text = textwrap.fill(card_details['skill_disc'], width=60)
-    evo_card_text = textwrap.fill(card_details['evo_skill_disc'], width=60)
-
     base_ct_img = ImageDraw.Draw(ct_canvas)
     base_ct_img.multiline_text(ct_xy, card_text, fill='white', font=text_font, spacing=line_size)
 
     if card_details['char_type'] == 1:
+        evo_card_text = textwrap.fill(card_details['evo_skill_disc'], width=60)
         evo_ct_img = ImageDraw.Draw(ct_canvas)
         evo_ct_img.multiline_text((0,200), evo_card_text, fill='white', font=text_font, spacing=line_size)
 
@@ -205,12 +204,12 @@ def paste_header_canvas(card, header_canvas, card_details):
 
     text_width = 400
     text_height = 100
-    info_text_canvas = Image.new('RGBA', (text_width, text_height), color='black')
+    info_text_canvas = Image.new('RGBA', (text_width, text_height), color=(0,0,0,0))
     craft_label = ImageDraw.Draw(info_text_canvas)
     trait_label = ImageDraw.Draw(info_text_canvas)
 
     craft_label.text((0,0), 'Class:', fill='white', font=font_2)
-    if card_details['clan'] is not 0:
+    if card_details['clan'] != 0:
         paste_craft_icon(info_text_canvas, card_details['clan'], (60, 0))
         craft_label.text((95, 0), craft, fill='white', font=font_2)
     else:
@@ -253,9 +252,9 @@ def cardgen(card_json, out_dir):
             art_canvas_width = 322
             art_canvas_height = 405
 
-        card = Image.new('RGBA', (template_width, template_height), color='black')
+        card = Image.new('RGBA', (template_width, template_height), color=(0,0,0,255))
         header_canvas = Image.new('RGBA', (header_width, header_height), color=(0,0,0,0))
-        art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color=(0,0,0,0))
+        art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color=(0,0,0,255))
         text_canvas = Image.new('RGBA', (text_canvas_width, text_canvas_height), color=(0,0,0,0))
 
         paste_header_canvas(card, header_canvas, card_details)
