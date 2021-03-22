@@ -143,6 +143,12 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
     else:
         text_frame = Image.open('templates/layout/spell_textbox.png')
 
+    draw_box = ImageDraw.Draw(text_canvas)
+
+    if card_details['char_type'] == 1:
+        draw_box.rectangle(((15,20),(650,455)), fill=(0,0,0,200))
+    else:
+        draw_box.rectangle(((10,10),(660,460)), fill=(0,0,0,200))
 
     if card_details['char_type'] == 1:
         font_size = 32
@@ -225,6 +231,20 @@ def paste_header_canvas(card, header_canvas, card_details):
 
     card.paste(header_canvas, (100, 0), header_canvas)
 
+def get_default_background(craft):
+    default_backgrounds = [
+        "templates/backgrounds/background_Morning_Star.png",
+        "templates/backgrounds/background_Forest.png",
+        "templates/backgrounds/background_Castle.png",
+        "templates/backgrounds/background_Laboratory.png",
+        "templates/backgrounds/background_Mountains.png",
+        "templates/backgrounds/background_Mansion.png",
+        "templates/backgrounds/background_Darkstone.png",
+        "templates/backgrounds/background_Hall.png",
+        "templates/backgrounds/background_Track_Night.png"
+    ]
+
+    return default_backgrounds[craft]
 
 def cardgen(card_json, out_dir):
     template_width = 1200
@@ -233,8 +253,8 @@ def cardgen(card_json, out_dir):
     header_width = 1200
     header_height = 100
 
-    text_canvas_width = 700
-    text_canvas_height = 700
+    text_canvas_width = 680
+    text_canvas_height = 470
 
     os.makedirs(out_dir, exist_ok=True)
 
@@ -253,8 +273,15 @@ def cardgen(card_json, out_dir):
             art_canvas_height = 405
 
         card = Image.new('RGBA', (template_width, template_height), color=(0,0,0,255))
+
+        bg_src = card_details.get('background_img', get_default_background(card_details['clan']))
+
+        background = Image.open(bg_src)
+        background.putalpha(100)
+        card.paste(background, None, background)
+
         header_canvas = Image.new('RGBA', (header_width, header_height), color=(0,0,0,0))
-        art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color=(0,0,0,255))
+        art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color=(0,0,0,0))
         text_canvas = Image.new('RGBA', (text_canvas_width, text_canvas_height), color=(0,0,0,0))
 
         paste_header_canvas(card, header_canvas, card_details)
