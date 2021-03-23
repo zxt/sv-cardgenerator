@@ -1,8 +1,25 @@
 import json
 import argparse
 import os
+import re
 import textwrap
 from PIL import Image, ImageDraw, ImageFont
+
+def clean_disc_string(string):
+    # remove ascii line dividers
+    cleaned_string = re.sub('<br>----------<br>',
+                            '\n',
+                            string)
+    # replace any remaining <br> with line break
+    cleaned_string = re.sub('<br>', '\n', cleaned_string)
+
+    return cleaned_string
+
+def wrap_text(text, width):
+    wrapped_text = '\n'.join(['\n'.join(textwrap.wrap(line, width,
+                 break_long_words=False, replace_whitespace=False))
+                 for line in text.splitlines() if line.strip() != ''])
+    return wrapped_text
 
 def scale_font_size(font, text, textbox_size):
     fontsize = 1
@@ -172,14 +189,16 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
         ct_xy = (0, 20)
         line_size = 15
 
-    card_text = textwrap.fill(card_details['skill_disc'], width=60)
+    line_width = 63
+
+    card_text = wrap_text(clean_disc_string(card_details['skill_disc']), line_width)
     base_ct_img = ImageDraw.Draw(ct_canvas)
-    base_ct_img.multiline_text(ct_xy, card_text, fill='white', font=text_font, spacing=line_size)
+    base_ct_img.text(ct_xy, card_text, fill='white', font=text_font, spacing=line_size)
 
     if card_details['char_type'] == 1:
-        evo_card_text = textwrap.fill(card_details['evo_skill_disc'], width=60)
+        evo_card_text = wrap_text(clean_disc_string(card_details['evo_skill_disc']), line_width)
         evo_ct_img = ImageDraw.Draw(ct_canvas)
-        evo_ct_img.multiline_text((0,200), evo_card_text, fill='white', font=text_font, spacing=line_size)
+        evo_ct_img.text((0,200), evo_card_text, fill='white', font=text_font, spacing=line_size)
 
     text_canvas.paste(text_frame, (0,0), text_frame)
     text_canvas.paste(ct_canvas, (50,85), ct_canvas)
