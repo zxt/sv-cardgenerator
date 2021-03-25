@@ -32,7 +32,7 @@ def scale_font_size(font, text, textbox_size):
 
     return fontsize
 
-def print_card_name(art_frame, card_name, card_type):
+def print_card_name(art_frame, card_name, card_type, adjust_for_card_frame):
     font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 1)
     font_size = scale_font_size(font, card_name, (200,30))
     font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', font_size)
@@ -41,16 +41,21 @@ def print_card_name(art_frame, card_name, card_type):
     w, h = name.textsize(card_name, font=font)
 
     x_pos = art_frame.width//2 - w//2
+    y_offset = 0
     if card_type == 1:
         y_pos = 48
     elif card_type == 2 or card_type == 3:
-        y_pos = 48
+        if adjust_for_card_frame:
+            y_offset = 5
+        y_pos = 38
     else:
-        y_pos = 26
+        if adjust_for_card_frame:
+            y_offset = -10
+        y_pos = 36
 
-    x_offset = 0 if x_pos > 80 else 20
+    x_offset = 10 if x_pos > 90 else 20
 
-    name.text((x_pos + x_offset, y_pos), card_name, fill='white', font=font)
+    name.text((x_pos + x_offset, y_pos + y_offset), card_name, fill='white', font=font)
 
 def print_card_cost(art_frame, cost, card_type):
     card_cost = str(cost)
@@ -125,7 +130,29 @@ def paste_card_art(canvas, img_src, card_type):
 
     canvas.paste(img, (x,y), mask)
 
+def paste_card_art_no_frame(card, art_canvas, card_details):
+    card_type = card_details['char_type']
+    if card_type == 1:
+        size = (347,461)
+    elif card_type == 2 or card_type == 3:
+        size = (322, 423)
+    else:
+        size = (322, 405)
+
+    art = Image.open(card_details['base_img']).resize(size)
+
+    print_card_name(art, card_details['card_name'], 
+                    card_details['char_type'], False)
+
+    art_canvas.paste(art, (0,0), art)
+
+    card.paste(art_canvas, (100, card.height//2 - art_canvas.height//2), art_canvas)
+
 def paste_card_art_canvas(card, art_canvas, card_details):
+    if "include_card_frame" in card_details and card_details['include_card_frame'] is False:
+        paste_card_art_no_frame(card, art_canvas, card_details)
+        return
+
     rarity_list = ['', 'bronze', 'silver', 'gold', 'lego']
     type_list = ['', 'follower', 'amulet', 'amulet', 'spell']
 
@@ -133,7 +160,8 @@ def paste_card_art_canvas(card, art_canvas, card_details):
     card_type = type_list[card_details['char_type']]
     art_frame = Image.open('templates/cards/'+card_type+'s/'+card_type+'_'+card_rarity+'.png')
 
-    print_card_name(art_frame, card_details['card_name'], card_details['char_type'])
+    print_card_name(art_frame, card_details['card_name'], 
+                    card_details['char_type'], True)
     print_card_cost(art_frame, card_details['cost'], card_details['char_type'])
 
     atk_xy = (30, 380)
