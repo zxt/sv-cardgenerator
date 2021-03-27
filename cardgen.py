@@ -6,12 +6,8 @@ import textwrap
 from PIL import Image, ImageDraw, ImageFont
 
 def clean_disc_string(string):
-    # remove ascii line dividers
-    cleaned_string = re.sub('<br>----------<br>',
-                            '\n',
-                            string)
-    # replace any remaining <br> with line break
-    cleaned_string = re.sub('<br>', '\n', cleaned_string)
+    # replace <br> with line break
+    cleaned_string = re.sub('<br>', '\n', string)
 
     return cleaned_string
 
@@ -181,55 +177,88 @@ def paste_card_art_canvas(card, art_canvas, card_details):
     card.paste(art_canvas, (100, card.height//2 - art_canvas.height//2), art_canvas)
 
 def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
-    if card_details['char_type'] == 1:
-        text_frame = Image.open('templates/layout/follower_textbox.png')
-    elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
-        text_frame = Image.open('templates/layout/amulet_textbox.png')
-    else:
-        text_frame = Image.open('templates/layout/spell_textbox.png')
-
-    draw_box = ImageDraw.Draw(text_canvas)
-
-    if card_details['char_type'] == 1:
-        draw_box.rectangle(((15,20),(650,455)), fill=(0,0,0,200))
-    else:
-        draw_box.rectangle(((10,10),(660,460)), fill=(0,0,0,200))
-
-    if card_details['char_type'] == 1:
-        font_size = 32
-        base_atk_xy = (500, 50)
-        base_hp_xy = (590, 50)
-        evo_atk_xy = (500, 245)
-        evo_hp_xy = (590, 245)
-        print_card_stats(text_frame, card_details['atk'], card_details['life'], base_atk_xy, base_hp_xy, font_size)
-        print_card_stats(text_frame, card_details['evo_atk'], card_details['evo_life'], evo_atk_xy, evo_hp_xy, font_size)
-
     text_font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 20)
     ct_canvas = Image.new('RGBA', (650, 600), color=(0,0,0,0))
 
     if card_details['char_type'] == 1:
         ct_xy = (0, 0)
-        line_size = 5
+        line_size = 6
     elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
-        ct_xy = (0, 20)
+        ct_xy = (0, 25)
         line_size = 15
     else:
-        ct_xy = (0, 20)
+        ct_xy = (0, 25)
         line_size = 15
 
-    line_width = 63
+    line_width = 67
 
     card_text = wrap_text(clean_disc_string(card_details['skill_disc']), line_width)
     base_ct_img = ImageDraw.Draw(ct_canvas)
     base_ct_img.text(ct_xy, card_text, fill='white', font=text_font, spacing=line_size)
 
+    ct_num_lines = len(card_text.splitlines())
+    if ct_num_lines < 6:
+        CT_TEXTBOX_TEMPLATE = 1
+    elif ct_num_lines < 8:
+        CT_TEXTBOX_TEMPLATE = 2
+    else:
+        CT_TEXTBOX_TEMPLATE = 3
+
+    if card_details['char_type'] == 1:
+        if CT_TEXTBOX_TEMPLATE == 1:
+            text_frame = Image.open('templates/layout/follower_textbox_5_lines.png')
+            base_atk_xy = (510, 33)
+            base_hp_xy = (600, 33)
+            evo_atk_xy = (510, 240)
+            evo_hp_xy = (600, 240)
+            evo_ct_xy = (0,205)
+            ct_canvas_xy = (30,75)
+        elif CT_TEXTBOX_TEMPLATE == 2:
+            text_frame = Image.open('templates/layout/follower_textbox_7_lines.png')
+            base_atk_xy = (490, 30)
+            base_hp_xy = (580, 30)
+            evo_atk_xy = (490, 257)
+            evo_hp_xy = (580, 257)
+            evo_ct_xy = (0,230)
+            ct_canvas_xy = (30,68)
+        else:
+            text_frame = Image.open('templates/layout/follower_textbox_12_lines.png')
+            base_atk_xy = (515, 31)
+            base_hp_xy = (605, 31)
+            evo_atk_xy = (515, 390)
+            evo_hp_xy = (605, 390)
+            evo_ct_xy = (0,358)
+            ct_canvas_xy = (30,70)
+    elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
+        text_frame = Image.open('templates/layout/amulet_textbox_9_lines.png')
+        ct_canvas_xy = (30,70)
+    else:
+        text_frame = Image.open('templates/layout/spell_textbox_6_lines.png')
+        ct_canvas_xy = (30,70)
+
     if card_details['char_type'] == 1:
         evo_card_text = wrap_text(clean_disc_string(card_details['evo_skill_disc']), line_width)
         evo_ct_img = ImageDraw.Draw(ct_canvas)
-        evo_ct_img.text((0,200), evo_card_text, fill='white', font=text_font, spacing=line_size)
+        evo_ct_img.text(evo_ct_xy, evo_card_text, fill='white', font=text_font, spacing=line_size)
+
+        font_size = 32
+        print_card_stats(text_frame, card_details['atk'], card_details['life'], base_atk_xy, base_hp_xy, font_size)
+        print_card_stats(text_frame, card_details['evo_atk'], card_details['evo_life'], evo_atk_xy, evo_hp_xy, font_size)
+
+    draw_box = ImageDraw.Draw(text_canvas)
+
+    if card_details['char_type'] == 1:
+        if CT_TEXTBOX_TEMPLATE == 1:
+            draw_box.rectangle(((0,5),(670,460)), fill=(0,0,0,200))
+        elif CT_TEXTBOX_TEMPLATE == 2:
+            draw_box.rectangle(((0,5),(640,440)), fill=(0,0,0,200))
+        else:
+            draw_box.rectangle(((0,5),(670,540)), fill=(0,0,0,200))
+    else:
+        draw_box.rectangle(((0,5),(670,460)), fill=(0,0,0,200))
 
     text_canvas.paste(text_frame, (0,0), text_frame)
-    text_canvas.paste(ct_canvas, (50,85), ct_canvas)
+    text_canvas.paste(ct_canvas, ct_canvas_xy, ct_canvas)
 
     ac_w, ac_h = art_canvas_size
     card.paste(text_canvas, (ac_w + 120, card.height//2 - ac_h//2), text_canvas)
@@ -301,7 +330,7 @@ def cardgen(card_json, out_dir):
     header_height = 100
 
     text_canvas_width = 680
-    text_canvas_height = 470
+    text_canvas_height = 600
 
     os.makedirs(out_dir, exist_ok=True)
 
