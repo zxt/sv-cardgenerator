@@ -184,10 +184,10 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
         ct_xy = (0, 0)
         line_size = 6
     elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
-        ct_xy = (0, 25)
+        ct_xy = (0, 30)
         line_size = 15
     else:
-        ct_xy = (0, 25)
+        ct_xy = (0, 30)
         line_size = 15
 
     line_width = 67
