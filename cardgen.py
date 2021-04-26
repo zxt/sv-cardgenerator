@@ -322,7 +322,7 @@ def get_default_background(craft):
 
     return default_backgrounds[craft]
 
-def cardgen(card_json, out_dir):
+def cardgen(card_details, card_filename):
     template_width = 1200
     template_height = 700
 
@@ -332,39 +332,33 @@ def cardgen(card_json, out_dir):
     text_canvas_width = 680
     text_canvas_height = 600
 
-    os.makedirs(out_dir, exist_ok=True)
+    if card_details['char_type'] == 1:
+        art_canvas_width = 347
+        art_canvas_height = 461
+    elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
+        art_canvas_width = 322
+        art_canvas_height = 423
+    else:
+        art_canvas_width = 322
+        art_canvas_height = 405
 
-    with open(card_json, "r") as data:
-        cards = json.load(data)
+    card = Image.new('RGBA', (template_width, template_height), color=(0,0,0,255))
 
-    for i, card_details in enumerate(cards):
-        if card_details['char_type'] == 1:
-            art_canvas_width = 347
-            art_canvas_height = 461
-        elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
-            art_canvas_width = 322
-            art_canvas_height = 423
-        else:
-            art_canvas_width = 322
-            art_canvas_height = 405
+    bg_src = card_details.get('background_img', get_default_background(card_details['clan']))
 
-        card = Image.new('RGBA', (template_width, template_height), color=(0,0,0,255))
+    background = Image.open(bg_src)
+    background.putalpha(100)
+    card.paste(background, None, background)
 
-        bg_src = card_details.get('background_img', get_default_background(card_details['clan']))
+    header_canvas = Image.new('RGBA', (header_width, header_height), color=(0,0,0,0))
+    art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color=(0,0,0,0))
+    text_canvas = Image.new('RGBA', (text_canvas_width, text_canvas_height), color=(0,0,0,0))
 
-        background = Image.open(bg_src)
-        background.putalpha(100)
-        card.paste(background, None, background)
+    paste_header_canvas(card, header_canvas, card_details)
+    paste_card_art_canvas(card, art_canvas, card_details)
+    paste_card_text_canvas(card, text_canvas, art_canvas.size, card_details)
 
-        header_canvas = Image.new('RGBA', (header_width, header_height), color=(0,0,0,0))
-        art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color=(0,0,0,0))
-        text_canvas = Image.new('RGBA', (text_canvas_width, text_canvas_height), color=(0,0,0,0))
-
-        paste_header_canvas(card, header_canvas, card_details)
-        paste_card_art_canvas(card, art_canvas, card_details)
-        paste_card_text_canvas(card, text_canvas, art_canvas.size, card_details)
-
-        card.save(out_dir + "/card_" + str(i) + ".png")
+    card.save(card_filename)
 
 
 if __name__ == "__main__":
@@ -377,4 +371,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    cardgen(args.file, args.out_dir)
+    os.makedirs(args.out_dir, exist_ok=True)
+
+    with open(args.file, "r") as data:
+        cards = json.load(data)
+
+    for i, card_details in enumerate(cards):
+        card_filename = args.out_dir + "/card_" + str(i) + ".png"
+        cardgen(card_details, card_filename)
