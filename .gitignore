@@ -106,6 +106,4 @@ venv.bak/
 # INI files
 *.ini
 
-card.png
 examples/
-cards/

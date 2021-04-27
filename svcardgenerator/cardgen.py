@@ -5,6 +5,8 @@ import re
 import textwrap
 from PIL import Image, ImageDraw, ImageFont
 
+FONT_FILE = os.path.join(os.path.dirname(__file__), 'templates/fonts/Seagull-Medium.otf')
+
 def clean_disc_string(string):
     # replace <br> with line break
     cleaned_string = re.sub('<br>', '\n', string)
@@ -24,14 +26,14 @@ def scale_font_size(font, text, textbox_size):
 
     while(font.getsize(text)[0] < W and font.getsize(text)[1] < H):
         fontsize += 1
-        font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', fontsize)
+        font = ImageFont.truetype(FONT_FILE, fontsize)
 
     return fontsize
 
 def print_card_name(art_frame, card_name, card_type, adjust_for_card_frame):
-    font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 1)
+    font = ImageFont.truetype(FONT_FILE, 1)
     font_size = scale_font_size(font, card_name, (200,30))
-    font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', font_size)
+    font = ImageFont.truetype(FONT_FILE, font_size)
 
     name = ImageDraw.Draw(art_frame)
     w, h = name.textsize(card_name, font=font)
@@ -55,9 +57,9 @@ def print_card_name(art_frame, card_name, card_type, adjust_for_card_frame):
 
 def print_card_cost(art_frame, cost, card_type):
     card_cost = str(cost)
-    font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 1)
+    font = ImageFont.truetype(FONT_FILE, 1)
     font_size = scale_font_size(font, card_cost, (60,60))
-    font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', font_size)
+    font = ImageFont.truetype(FONT_FILE, font_size)
 
     cost = ImageDraw.Draw(art_frame)
     w, h = cost.textsize(card_cost, font=font)
@@ -77,7 +79,7 @@ def print_card_cost(art_frame, cost, card_type):
 def print_card_stats(art_frame, card_atk, card_hp, atk_xy, hp_xy, font_size):
     atk = str(card_atk)
     hp = str(card_hp)
-    font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', font_size)
+    font = ImageFont.truetype(FONT_FILE, font_size)
 
     atk_img = ImageDraw.Draw(art_frame)
     hp_img = ImageDraw.Draw(art_frame)
@@ -88,7 +90,8 @@ def print_card_stats(art_frame, card_atk, card_hp, atk_xy, hp_xy, font_size):
 def paste_craft_gem(canvas, craft, card_type):
     craft_list = ['neutral', 'forest', 'sword', 'rune', 'dragon', 'shadow', 'blood', 'haven', 'portal']
 
-    icon = Image.open('templates/cards/craft_gems/'+craft_list[craft]+'.png')
+    craft_gem = os.path.join(os.path.dirname(__file__), 'templates/cards/craft_gems/'+craft_list[craft]+'.png')
+    icon = Image.open(craft_gem)
 
     if card_type == 1:
         w = 167
@@ -103,24 +106,28 @@ def paste_craft_gem(canvas, craft, card_type):
     canvas.paste(icon, (w, h), icon)
 
 def paste_card_art(canvas, img_src, card_type):
+    follower_mask = os.path.join(os.path.dirname(__file__), "templates/cards/followers/follower_mask.png")
+    amulet_mask = os.path.join(os.path.dirname(__file__), "templates/cards/amulets/amulet_mask.png")
+    spell_mask = os.path.join(os.path.dirname(__file__), "templates/cards/spells/spell_mask.png")
+
     if card_type == 1:
         w = 257
         h = 327
         x = 48
         y = 86
-        mask = Image.open("templates/cards/followers/follower_mask.png").convert('L').resize((w,h))
+        mask = Image.open(follower_mask).convert('L').resize((w,h))
     elif card_type == 2 or card_type == 3:
         w = 257
         h = 324
         x = 48
         y = 82
-        mask = Image.open("templates/cards/amulets/amulet_mask.png").convert('L').resize((w,h))
+        mask = Image.open(amulet_mask).convert('L').resize((w,h))
     else:
         w = 254
         h = 311
         x = 48
         y = 69
-        mask = Image.open("templates/cards/spells/spell_mask.png").convert('L').resize((w,h))
+        mask = Image.open(spell_mask).convert('L').resize((w,h))
 
     img = Image.open(img_src).resize((w,h))
 
@@ -154,7 +161,8 @@ def paste_card_art_canvas(card, art_canvas, card_details):
 
     card_rarity = rarity_list[card_details['rarity']]
     card_type = type_list[card_details['char_type']]
-    art_frame = Image.open('templates/cards/'+card_type+'s/'+card_type+'_'+card_rarity+'.png')
+    frame_img = os.path.join(os.path.dirname(__file__), 'templates/cards/'+card_type+'s/'+card_type+'_'+card_rarity+'.png')
+    art_frame = Image.open(frame_img)
 
     print_card_name(art_frame, card_details['card_name'], 
                     card_details['char_type'], True)
@@ -167,7 +175,7 @@ def paste_card_art_canvas(card, art_canvas, card_details):
         print_card_stats(art_frame, card_details['atk'], card_details['life'], atk_xy, hp_xy, font_size)
 
     if "base_img" not in card_details:
-        card_details['base_img'] = "templates/cards/placeholder.png"
+        card_details['base_img'] = os.path.join(os.path.dirname(__file__), "templates/cards/placeholder.png")
     paste_card_art(art_canvas, card_details['base_img'], card_details['char_type'])
 
     paste_craft_gem(art_frame, card_details['clan'], card_details['char_type'])
@@ -177,7 +185,7 @@ def paste_card_art_canvas(card, art_canvas, card_details):
     card.paste(art_canvas, (100, card.height//2 - art_canvas.height//2), art_canvas)
 
 def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
-    text_font = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 20)
+    text_font = ImageFont.truetype(FONT_FILE, 20)
     ct_canvas = Image.new('RGBA', (650, 600), color=(0,0,0,0))
 
     if card_details['char_type'] == 1:
@@ -206,7 +214,8 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
 
     if card_details['char_type'] == 1:
         if CT_TEXTBOX_TEMPLATE == 1:
-            text_frame = Image.open('templates/layout/follower_textbox_5_lines.png')
+            textbox_img = os.path.join(os.path.dirname(__file__), 'templates/layout/follower_textbox_5_lines.png')
+            text_frame = Image.open(textbox_img)
             base_atk_xy = (510, 33)
             base_hp_xy = (600, 33)
             evo_atk_xy = (510, 240)
@@ -214,7 +223,8 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
             evo_ct_xy = (0,205)
             ct_canvas_xy = (30,75)
         elif CT_TEXTBOX_TEMPLATE == 2:
-            text_frame = Image.open('templates/layout/follower_textbox_7_lines.png')
+            textbox_img = os.path.join(os.path.dirname(__file__), 'templates/layout/follower_textbox_7_lines.png')
+            text_frame = Image.open(textbox_img)
             base_atk_xy = (490, 30)
             base_hp_xy = (580, 30)
             evo_atk_xy = (490, 257)
@@ -222,7 +232,8 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
             evo_ct_xy = (0,230)
             ct_canvas_xy = (30,68)
         else:
-            text_frame = Image.open('templates/layout/follower_textbox_12_lines.png')
+            textbox_img = os.path.join(os.path.dirname(__file__), 'templates/layout/follower_textbox_12_lines.png')
+            text_frame = Image.open(textbox_img)
             base_atk_xy = (515, 31)
             base_hp_xy = (605, 31)
             evo_atk_xy = (515, 390)
@@ -230,10 +241,12 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
             evo_ct_xy = (0,358)
             ct_canvas_xy = (30,70)
     elif card_details['char_type'] == 2 or card_details['char_type'] == 3:
-        text_frame = Image.open('templates/layout/amulet_textbox_9_lines.png')
+        textbox_img = os.path.join(os.path.dirname(__file__), 'templates/layout/amulet_textbox_9_lines.png')
+        text_frame = Image.open(textbox_img)
         ct_canvas_xy = (30,70)
     else:
-        text_frame = Image.open('templates/layout/spell_textbox_6_lines.png')
+        textbox_img = os.path.join(os.path.dirname(__file__), 'templates/layout/spell_textbox_6_lines.png')
+        text_frame = Image.open(textbox_img)
         ct_canvas_xy = (30,70)
 
     if card_details['char_type'] == 1:
@@ -266,7 +279,8 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
 def paste_craft_icon(canvas, craft, pos):
     craft_list = ['neutral', 'forest', 'sword', 'rune', 'dragon', 'shadow', 'blood', 'haven', 'portal']
 
-    icon = Image.open('templates/cards/craft_icons/'+craft_list[craft]+'.png')
+    craft_icon = os.path.join(os.path.dirname(__file__), 'templates/cards/craft_icons/'+craft_list[craft]+'.png')
+    icon = Image.open(craft_icon)
 
     canvas.paste(icon, (pos[0],pos[1]), icon)
 
@@ -276,8 +290,8 @@ def paste_header_canvas(card, header_canvas, card_details):
 
     craft = craft_list[card_details['clan']]
 
-    font_1 = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 36)
-    font_2 = ImageFont.truetype('templates/fonts/Seagull-Medium.otf', 22)
+    font_1 = ImageFont.truetype(FONT_FILE, 36)
+    font_2 = ImageFont.truetype(FONT_FILE, 22)
 
     h_height = header_canvas.height
 
@@ -302,22 +316,23 @@ def paste_header_canvas(card, header_canvas, card_details):
 
     header_canvas.paste(info_text_canvas, (card.width - text_width, h_height//4), info_text_canvas)
 
-    divider = Image.open('templates/layout/header_divider.png')
+    divider_img = os.path.join(os.path.dirname(__file__), 'templates/layout/header_divider.png')
+    divider = Image.open(divider_img)
     header_canvas.paste(divider, (0, h_height - 10), divider)
 
     card.paste(header_canvas, (100, 0), header_canvas)
 
 def get_default_background(craft):
     default_backgrounds = [
-        "templates/backgrounds/background_Morning_Star.png",
-        "templates/backgrounds/background_Forest.png",
-        "templates/backgrounds/background_Castle.png",
-        "templates/backgrounds/background_Laboratory.png",
-        "templates/backgrounds/background_Mountains.png",
-        "templates/backgrounds/background_Mansion.png",
-        "templates/backgrounds/background_Darkstone.png",
-        "templates/backgrounds/background_Hall.png",
-        "templates/backgrounds/background_Track_Night.png"
+        os.path.join(os.path.dirname(__file__), "templates/backgrounds/background_Morning_Star.png"),
+        os.path.join(os.path.dirname(__file__), "templates/backgrounds/background_Forest.png"),
+        os.path.join(os.path.dirname(__file__), "templates/backgrounds/background_Castle.png"),
+        os.path.join(os.path.dirname(__file__), "templates/backgrounds/background_Laboratory.png"),
+        os.path.join(os.path.dirname(__file__), "templates/backgrounds/background_Mountains.png"),
+        os.path.join(os.path.dirname(__file__), "templates/backgrounds/background_Mansion.png"),
+        os.path.join(os.path.dirname(__file__), "templates/backgrounds/background_Darkstone.png"),
+        os.path.join(os.path.dirname(__file__), "templates/backgrounds/background_Hall.png"),
+        os.path.join(os.path.dirname(__file__), "templates/backgrounds/background_Track_Night.png")
     ]
 
     return default_backgrounds[craft]
