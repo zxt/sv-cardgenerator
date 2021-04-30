@@ -3,7 +3,7 @@ import argparse
 import os
 import re
 import textwrap
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 FONT_FILE = os.path.join(os.path.dirname(__file__), 'templates/fonts/Seagull-Medium.otf')
 
@@ -262,13 +262,13 @@ def paste_card_text_canvas(card, text_canvas, art_canvas_size, card_details):
 
     if card_details['char_type'] == 1:
         if CT_TEXTBOX_TEMPLATE == 1:
-            draw_box.rectangle(((0,5),(670,460)), fill=(0,0,0,200))
+            draw_box.rectangle(((0,5),(670,460)), fill=(0,0,0,235))
         elif CT_TEXTBOX_TEMPLATE == 2:
-            draw_box.rectangle(((0,5),(640,440)), fill=(0,0,0,200))
+            draw_box.rectangle(((0,5),(640,440)), fill=(0,0,0,235))
         else:
-            draw_box.rectangle(((0,5),(670,540)), fill=(0,0,0,200))
+            draw_box.rectangle(((0,5),(670,540)), fill=(0,0,0,235))
     else:
-        draw_box.rectangle(((0,5),(670,460)), fill=(0,0,0,200))
+        draw_box.rectangle(((0,5),(670,460)), fill=(0,0,0,235))
 
     text_canvas.paste(text_frame, (0,0), text_frame)
     text_canvas.paste(ct_canvas, ct_canvas_xy, ct_canvas)
@@ -357,13 +357,14 @@ def cardgen(card_details, card_filename):
         art_canvas_width = 322
         art_canvas_height = 405
 
-    card = Image.new('RGBA', (template_width, template_height), color=(0,0,0,255))
+    card = Image.new('RGBA', (template_width, template_height), color=(0,0,0))
 
     bg_src = card_details.get('background_img', get_default_background(card_details['clan']))
 
     background = Image.open(bg_src)
-    background.putalpha(100)
-    card.paste(background, None, background)
+    enhancer = ImageEnhance.Brightness(background)
+    bg_img = enhancer.enhance(0.4)
+    card.paste(bg_img, None)
 
     header_canvas = Image.new('RGBA', (header_width, header_height), color=(0,0,0,0))
     art_canvas = Image.new('RGBA', (art_canvas_width, art_canvas_height), color=(0,0,0,0))
